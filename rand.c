@@ -64,47 +64,47 @@ seed_rand (const char* seed_file)
     int size = ENTROPY_SIZE;
 
     if (access (seed_file, R_OK | W_OK) == 0) {
-	if (lstat (seed_file, &seed_stat) == -1) {
-	    perror ("Error executing lstat on seed file: ");
-	    goto err_out;
-	}
-	if (!S_ISREG (seed_stat.st_mode)) {
-	    /* seed file isn't a regular file:
-	       try to remove it if possible and fall back to ENTROPY_SOURCE
-	     */
-	    seed = ENTROPY_SOURCE;
-	    fprintf (stderr,
+        if (lstat (seed_file, &seed_stat) == -1) {
+            perror ("Error executing lstat on seed file: ");
+            goto err_out;
+        }
+        if (!S_ISREG (seed_stat.st_mode)) {
+            /* seed file isn't a regular file:
+               try to remove it if possible and fall back to ENTROPY_SOURCE
+             */
+            seed = ENTROPY_SOURCE;
+            fprintf (stderr,
                      "Seed file isn't regular file: %s. Falling back to %s\n",
                      seed_file, ENTROPY_SOURCE);
-	    if (unlink (seed_file) == -1) {
-		perror ("Error executing unlink on seed file: ");
-	    }
-	}
-	if (seed_stat.st_size < ENTROPY_SIZE) {
-	    /* seed file isn't at least ENTROPY_SIZE bytes */
-	    seed = ENTROPY_SOURCE;
-	    fprintf (stderr,
+            if (unlink (seed_file) == -1) {
+                perror ("Error executing unlink on seed file: ");
+            }
+        }
+        if (seed_stat.st_size < ENTROPY_SIZE) {
+            /* seed file isn't at least ENTROPY_SIZE bytes */
+            seed = ENTROPY_SOURCE;
+            fprintf (stderr,
                      "Seed file is too samll. Falling back to %s.\n", seed);
-	    if (unlink (seed_file) == -1) {
-		perror ("Error executing unlink on seed file: ");
-	    }
-	} else { /* use size from seed file */
-	    size = seed_stat.st_size;
-	}
+            if (unlink (seed_file) == -1) {
+                perror ("Error executing unlink on seed file: ");
+            }
+        } else { /* use size from seed file */
+            size = seed_stat.st_size;
+        }
     } else {
-	seed = ENTROPY_SOURCE;
-	fprintf (stderr,
+        seed = ENTROPY_SOURCE;
+        fprintf (stderr,
                  "Unable to access seed file. If it exists, be sure it's "
                  "both readable and writable. Falling back to %s.\n",
                  ENTROPY_SOURCE);
     }
 
     if (RAND_load_file (seed, size) != size) {
-	randerr = ERR_get_error ();
-	fprintf (stderr, "RAND_load_file failed: %s\n", ERR_reason_error_string (randerr));
-	goto err_out;
+        randerr = ERR_get_error ();
+        fprintf (stderr, "RAND_load_file failed: %s\n", ERR_reason_error_string (randerr));
+        goto err_out;
     } else if (args.verbose) {
-	fprintf (stderr, "RAND_load_file: loaded %d bytes from %s\n", size, seed);
+        fprintf (stderr, "RAND_load_file: loaded %d bytes from %s\n", size, seed);
     }
     return 0;
 err_out:
@@ -140,9 +140,9 @@ seed_save (const char* seed_file)
     /* persist RAND state */
     bytes = RAND_write_file (seed_file);
     if (bytes == -1) {
-	randerr = ERR_get_error ();
-	fprintf (stderr, "RAND_write_file failed: %s\n", ERR_reason_error_string (randerr));
-	return 1;
+        randerr = ERR_get_error ();
+        fprintf (stderr, "RAND_write_file failed: %s\n", ERR_reason_error_string (randerr));
+        return 1;
     } else if (args.verbose) {
         fprintf (stderr, "RAND_write_file wrote %d bytes to %s\n", bytes, seed_file);
     }
@@ -156,11 +156,11 @@ get_rand (unsigned char* dest, size_t size)
     if (args.verbose)
         fprintf (stderr, "reading %d RAND_bytes\n", size);
     if (RAND_bytes (dest, size) != 1) {
-	randerr = ERR_get_error ();
-	fprintf (stderr,
+        randerr = ERR_get_error ();
+        fprintf (stderr,
                  "RAND_bytes failed: %s\n",
                  ERR_reason_error_string (randerr));
-	return NULL;
+        return NULL;
     }
     return dest;
 }
@@ -229,10 +229,10 @@ main (int argc, char* argv[])
         exit (EXIT_FAILURE);
 
     if (seed_rand (SEED_FILE))
-	exit (EXIT_FAILURE);
+        exit (EXIT_FAILURE);
 
     if (get_rand (buffer, args.bytes) == NULL)
-	exit (EXIT_FAILURE);
+        exit (EXIT_FAILURE);
 
     for (i = 0; i < args.bytes; ++i) {
         if (args.hex)
