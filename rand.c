@@ -65,7 +65,7 @@ seed_rand (const char* seed_file)
 
     if (access (seed_file, R_OK | W_OK) == 0) {
 	if (lstat (seed_file, &seed_stat) == -1) {
-	    perror ("Unable to stat seed file: ");
+	    perror ("Error executing lstat on seed file: ");
 	    goto err_out;
 	}
 	if (!S_ISREG (seed_stat.st_mode)) {
@@ -77,7 +77,7 @@ seed_rand (const char* seed_file)
                      "Seed file isn't regular file: %s. Falling back to %s\n",
                      seed_file, ENTROPY_SOURCE);
 	    if (unlink (seed_file) == -1) {
-		perror ("Unable to unlink seed file\n");
+		perror ("Error executing unlink on seed file: ");
 	    }
 	}
 	if (seed_stat.st_size < ENTROPY_SIZE) {
@@ -86,7 +86,7 @@ seed_rand (const char* seed_file)
 	    fprintf (stderr,
                      "Seed file is too samll. Falling back to %s.\n", seed);
 	    if (unlink (seed_file) == -1) {
-		perror ("Unable to unlink seed file\n");
+		perror ("Error executing unlink on seed file: ");
 	    }
 	} else { /* use size from seed file */
 	    size = seed_stat.st_size;
@@ -126,10 +126,13 @@ seed_save (const char* seed_file)
     dir = opendir (dirpart);
     if (!dir) {
         if (errno == ENOENT) {
-            if (mkdir (dirpart, S_IRWXU | S_IRGRP | S_IXGRP) == -1)
-                perror (dirpart);
+            if (mkdir (dirpart, S_IRWXU | S_IRGRP | S_IXGRP) == -1) {
+                fprintf (stderr, "Error executing mkdir %s: ", dirpart);
+                perror (NULL);
+            }
         } else {
-            perror (dirpart);
+            fprintf (stderr, "Error executing opendir on %s: ", dirpart);
+            perror (NULL);
         }
     } else {
         closedir (dir);
