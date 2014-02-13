@@ -15,6 +15,7 @@
 #include <limits.h>
 #include <openssl/err.h>
 #include <openssl/rand.h>
+#include <pwd.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -27,7 +28,7 @@
  *  RAND is seeded from a persistent seed file or /dev/random if seed
  *  file isn't present.
  */
-#define SEED_FILE "/var/lib/rand/rand.seed"
+#define SEED_FILE "%s/.rand.seed"
 #define ENTROPY_SOURCE "/dev/random"
 #define ENTROPY_SIZE 32
 #define USAGE fprintf (stderr, "Usage: %s [--hex|--verbose|--help] bytes\n", argv [0]);
@@ -223,12 +224,14 @@ main (int argc, char* argv[])
     int i;
     unsigned long randerr = 0;
     unsigned char buffer [MAX_BYTES];
+    char seed_path [PATH_MAX + 1] = { 0, };
 
     args_parse (argc, argv);
     if (args_sanity ())
         exit (EXIT_FAILURE);
 
-    if (seed_rand (SEED_FILE))
+    snprintf (seed_path, PATH_MAX, SEED_FILE, getpwuid(getuid())->pw_dir);
+    if (seed_rand (seed_path))
         exit (EXIT_FAILURE);
 
     if (get_rand (buffer, args.bytes) == NULL)
@@ -243,6 +246,6 @@ main (int argc, char* argv[])
     if (args.hex)
         printf ("\n");
 
-    seed_save (SEED_FILE);
+    seed_save (seed_path);
     exit (EXIT_SUCCESS);
 }
